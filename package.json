@@ -1,0 +1,29 @@
+{
+  "name": "kotlin-node",
+  "version": "1.0.0",
+  "description": "Kotlin Node.JS compiler installer and wrapper",
+  "main": "index.js",
+  "scripts": {
+    "install": "node install.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeckson/kotlin-node.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zeckson/kotlin-node/issues"
+  },
+  "homepage": "https://github.com/zeckson/kotlin-node#readme",
+  "dependencies": {
+    "extract-zip": "1.6.5",
+    "fs-extra": "2.1.2",
+    "kew": "0.7.0",
+    "progress": "2.0.0",
+    "request": "2.81.0",
+    "request-progress": "3.0.0"
+  }
+}
