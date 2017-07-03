@@ -2,7 +2,7 @@
   "name": "kotlin-node",
   "version": "1.0.0",
   "description": "Kotlin Node.JS compiler installer and wrapper",
-  "main": "index.js",
+  "main": "lib/kotlinc.js",
   "scripts": {
     "install": "node install.js",
     "test": "echo \"Error: no test specified\" && exit 1"
