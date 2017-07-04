@@ -1,3 +1,5 @@
+'use strict';
+
 const kotlinc = require(`kotlin-node`);
 
 kotlinc([
