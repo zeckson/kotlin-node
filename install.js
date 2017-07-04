@@ -1,3 +1,5 @@
+'use strict';
+
 const requestProgress = require(`request-progress`);
 const progress = require(`progress`);
 const extractZip = require(`extract-zip`);
@@ -18,14 +20,22 @@ const MODULE_NAME = `KotlinJS`;
 
 // If the process exits without going through exit(), then we did not complete.
 let validExit = false;
-
+process.on(`exit`, () => {
+  if (!validExit) {
+    console.log(`Install exited unexpectedly`);
+    exit(1);
+  }
+});
 
 // NPM adds bin directories to the path, which will cause `which` to find the
 // bin for this package not the actual kotlinjs bin.  Also help out people who
 // put ./bin on their path
 const cleanPath = function (path) {
-  return path.replace(/:[^:]*node_modules[^:]*/g, ``).replace(/(^|:)\.\/bin(\:|$)/g, `:`).replace(/^:+/, ``).
-    replace(/:+$/, ``);
+  return path.
+      replace(/:[^:]*node_modules[^:]*/g, ``).
+      replace(/(^|:)\.\/bin(\:|$)/g, `:`).
+      replace(/^:+/, ``).
+      replace(/:+$/, ``);
 };
 
 process.env.PATH = cleanPath(originalPath);
@@ -35,36 +45,36 @@ const pkgPath = path.join(libPath, KOTLIN_PATH_NAME);
 
 // Try to figure out installed kotlin-js
 Promise.resolve(true).
-  then(downloadKotlinJs).
-  then(extractDownload).
-  then((extractedPath) => copyIntoPlace(extractedPath, pkgPath)).
-  then(() => {
+    then(downloadKotlinJs).
+    then(extractDownload).
+    then((extractedPath) => copyIntoPlace(extractedPath, pkgPath)).
+    then(() => {
 
-    const location = getTargetPlatform() === `win32` ?
+      const location = getTargetPlatform() === `win32` ?
           path.join(pkgPath, `bin`, `${EXEC_NAME}.exe`) :
           path.join(pkgPath, `bin`, EXEC_NAME);
 
-    try {
+      try {
         // Ensure executable is executable by all users
-      fs.chmodSync(location, `755`);
-    } catch (err) {
-      if (err.code === `ENOENT`) {
-        console.error(`chmod failed: kotlinjs was not successfully copied to`, location);
-        exit(1);
+        fs.chmodSync(location, `755`);
+      } catch (err) {
+        if (err.code === `ENOENT`) {
+          console.error(`chmod failed: kotlinjs was not successfully copied to`, location);
+          exit(1);
+        }
+        throw err;
       }
-      throw err;
-    }
 
-    const relativeLocation = path.relative(libPath, location);
-    writeLocationFile(relativeLocation);
+      const relativeLocation = path.relative(libPath, location);
+      writeLocationFile(relativeLocation);
 
-    console.log(`Done. ${MODULE_NAME} binary available at ${location}`);
-    exit(0);
-  }).
-  catch((err) => {
-    console.error(`${MODULE_NAME} installation failed`, err, err.stack);
-    exit(1);
-  });
+      console.log(`Done. ${MODULE_NAME} binary available at ${location}`);
+      exit(0);
+    }).
+    catch((err) => {
+      console.error(`${MODULE_NAME} installation failed`, err, err.stack);
+      exit(1);
+    });
 
 
 function writeLocationFile(location) {
