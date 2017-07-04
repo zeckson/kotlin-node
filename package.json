@@ -2,7 +2,10 @@
   "name": "kotlin-node",
   "version": "0.4.2",
   "description": "Kotlin Node.JS compiler installer and wrapper",
-  "main": "lib/kotlinc.js",
+  "bin": {
+    "kotlinc-js": "./bin/kotlinc.js"
+  },
+  "main": "lib/cli.js",
   "scripts": {
     "install": "node install.js",
     "test": "eslint ./",
