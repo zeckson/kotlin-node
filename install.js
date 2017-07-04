@@ -5,7 +5,6 @@ const Progress = require(`progress`);
 const extractZip = require(`extract-zip`);
 const cp = require(`child_process`);
 const fs = require(`fs-extra`);
-const kew = require(`kew`);
 const path = require(`path`);
 const request = require(`request`);
 const url = require(`url`);
@@ -17,6 +16,18 @@ const KOTLIN_PATH_NAME = `kotlin-js`;
 const EXEC_NAME = `kotlinc-js`;
 const MODULE_NAME = `KotlinJS`;
 
+const promisify = (fun, ...args) => new Promise((resolve, reject) => {
+  const value = fun(...args, (err, result) => {
+    if (err) {
+      reject(err);
+    } else {
+      resolve(result);
+    }
+  });
+  if (value) {
+    resolve(value);
+  }
+});
 
 // If the process exits without going through exit(), then we did not complete.
 let validExit = false;
@@ -70,21 +81,17 @@ function resolveLocationJs() {
 /*
  * Check to see if the binary in lib is OK to use. If successful, exit the process.
  */
-function tryPhantomjsInLib() {
-  return kew.fcall(function () {
-    const location = resolveLocationJs();
-    if (location) {
-      console.log(`PhantomJS is previously installed at`, location);
-      exit(0);
-    }
-  }).fail(function () {
-    // silently swallow any errors
-  });
+function tryKotlinJsInLib() {
+  const location = resolveLocationJs();
+  if (location) {
+    console.log(`KotlinJS is previously installed at`, location);
+    exit(0);
+  }
 }
 
 // Try to figure out installed kotlin-js
 Promise.resolve().
-    then(tryPhantomjsInLib).
+    then(tryKotlinJsInLib).
     then(downloadKotlinJs).
     then(extractDownload).
     then((extractedPath) => copyIntoPlace(extractedPath, pkgPath)).
@@ -328,17 +335,16 @@ function extractDownload(filePath) {
   });
 }
 
-
 function copyIntoPlace(extractedPath, targetPath) {
   console.log(`Removing`, targetPath);
-  return kew.nfcall(fs.remove, targetPath).then(function () {
+  return promisify(fs.remove, targetPath).then(function () {
     // Look for the extracted directory, so we can rename it.
     const files = fs.readdirSync(extractedPath);
     for (let i = 0; i < files.length; i++) {
       const file = path.join(extractedPath, files[i]);
       if (fs.statSync(file).isDirectory() && file.indexOf(VERSION) > -1) {
         console.log(`Copying extracted folder`, file, `->`, targetPath);
-        return kew.nfcall(fs.move, file, targetPath);
+        return promisify(fs.move, file, targetPath);
       }
     }
 
@@ -383,20 +389,17 @@ function downloadKotlinJs() {
   }
 
   const downloadUrl = downloadSpec.url;
-  let downloadedFile;
+  const tmpPath = findSuitableTempDirectory();
+  const fileName = downloadUrl.split(`/`).pop();
+  const downloadedFile = path.join(tmpPath, fileName);
 
-  return kew.fcall(function () {
-    // Can't use a global VERSION so start a download.
-    const tmpPath = findSuitableTempDirectory();
-    const fileName = downloadUrl.split(`/`).pop();
-    downloadedFile = path.join(tmpPath, fileName);
-
+  return new Promise((resolve) => {
     if (fs.existsSync(downloadedFile)) {
       console.log(`Download already available at`, downloadedFile);
-      return verifyChecksum(downloadedFile, downloadSpec.checksum);
+      resolve(verifyChecksum(downloadedFile, downloadSpec.checksum));
     }
-    return false;
-  }).then(function (verified) {
+    resolve(false);
+  }).then((verified) => {
     if (verified) {
       return downloadedFile;
     }
