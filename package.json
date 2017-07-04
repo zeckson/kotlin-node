@@ -6,7 +6,7 @@
   "scripts": {
     "install": "node install.js",
     "test": "eslint ./",
-    "deploy": "npm run test && npm publish"
+    "deploy": "npm run test && git push && npm publish"
   },
   "repository": {
     "type": "git",
