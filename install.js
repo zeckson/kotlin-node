@@ -30,26 +30,65 @@ process.on(`exit`, () => {
 // NPM adds bin directories to the path, which will cause `which` to find the
 // bin for this package not the actual kotlinjs bin.  Also help out people who
 // put ./bin on their path
-const clean = function (filepath) {
-  return filepath.
-      replace(/:[^:]*node_modules[^:]*/g, ``).
-      replace(/(^|:)\.\/bin(\:|$)/g, `:`).
-      replace(/^:+/, ``).
-      replace(/:+$/, ``);
-};
+const clean = (filepath) => filepath.
+    replace(/:[^:]*node_modules[^:]*/g, ``).
+    replace(/(^|:)\.\/bin(\:|$)/g, `:`).
+    replace(/^:+/, ``).
+    replace(/:+$/, ``);
 
 process.env.PATH = clean(originalPath);
 
-const libPath = path.join(__dirname, `lib`);
+
+const LIB_FOLDER_NAME = `lib`;
+const LOCATION_JS_MODULE_NAME = `location.js`;
+
+const libPath = path.join(__dirname, LIB_FOLDER_NAME);
 const pkgPath = path.join(libPath, KOTLIN_PATH_NAME);
+const locationJsPath = path.join(libPath, LOCATION_JS_MODULE_NAME);
+
+function resolveLocationJs() {
+  const locationModulePath = `./${LIB_FOLDER_NAME}/${LOCATION_JS_MODULE_NAME}`;
+  console.log(`Resolving existing file in: ${locationModulePath}`);
+  const libModule = require(locationModulePath);
+
+  if (libModule.location &&
+      getTargetPlatform() === libModule.platform &&
+      getTargetArch() === libModule.arch) {
+    try {
+      const resolvedLocation = path.resolve(libPath, libModule.location);
+      console.log(`Found location: ${resolvedLocation}`);
+      if (fs.statSync(resolvedLocation)) {
+        return resolvedLocation;
+      }
+    } catch (e) {
+      // fall through
+    }
+  }
+  return false;
+}
+
+/*
+ * Check to see if the binary in lib is OK to use. If successful, exit the process.
+ */
+function tryPhantomjsInLib() {
+  return kew.fcall(function () {
+    const location = resolveLocationJs();
+    if (location) {
+      console.log(`PhantomJS is previously installed at`, location);
+      exit(0);
+    }
+  }).fail(function () {
+    // silently swallow any errors
+  });
+}
 
 // Try to figure out installed kotlin-js
-Promise.resolve(true).
+Promise.resolve().
+    then(tryPhantomjsInLib).
     then(downloadKotlinJs).
     then(extractDownload).
     then((extractedPath) => copyIntoPlace(extractedPath, pkgPath)).
     then(() => {
-
       const location = getTargetPlatform() === `win32` ?
           path.join(pkgPath, `bin`, `${EXEC_NAME}.exe`) :
           path.join(pkgPath, `bin`, EXEC_NAME);
@@ -92,7 +131,7 @@ function writeLocationFile(location) {
     contents += `module.exports.platform = "${platform}";\nmodule.exports.arch = "${arch}";\n`;
   }
 
-  fs.writeFileSync(path.join(libPath, `location.js`), contents);
+  fs.writeFileSync(locationJsPath, contents);
 }
 
 function exit(code) {
