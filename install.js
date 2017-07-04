@@ -124,10 +124,11 @@ const writeLocationFile = (location) => {
   const platform = getTargetPlatform();
   const arch = getTargetArch();
 
-  let contents = `module.exports.location = "${location}";\n`;
+  let contents = `'use strict';\n`;
+  contents += `module.exports.location = \`${location}\`;\n`;
 
   if (/^[a-zA-Z0-9]*$/.test(platform) && /^[a-zA-Z0-9]*$/.test(arch)) {
-    contents += `module.exports.platform = "${platform}";\nmodule.exports.arch = "${arch}";\n`;
+    contents += `module.exports.platform = \`${platform}\`;\nmodule.exports.arch = \`${arch}\`;\n`;
   }
 
   fs.writeFileSync(locationJsPath, contents);
@@ -367,7 +368,7 @@ const downloadKotlinJs = () => {
 
 // Check for installed kotlin-js and then download
 Promise.resolve().
-    // then(tryKotlinJsInLib).
+    then(tryKotlinJsInLib).
     then(downloadKotlinJs).
     then(extractDownload).
     then((extractedPath) => copyIntoPlace(extractedPath, pkgPath)).
