@@ -1,6 +1,6 @@
 {
   "name": "kotlin-node",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Kotlin Node.JS compiler installer and wrapper",
   "main": "lib/kotlinc.js",
   "scripts": {
