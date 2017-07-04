@@ -5,7 +5,8 @@
   "main": "lib/kotlinc.js",
   "scripts": {
     "install": "node install.js",
-    "test": "eslint ./"
+    "test": "eslint ./",
+    "publish": "npm run test && npm publish"
   },
   "repository": {
     "type": "git",
