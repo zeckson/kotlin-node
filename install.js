@@ -9,7 +9,6 @@ const path = require(`path`);
 const request = require(`request`);
 const url = require(`url`);
 
-const originalPath = process.env.PATH;
 const VERSION = `1.1.3`;
 const DEFAULT_CDN = `https://github.com/JetBrains/kotlin/releases/download/v${VERSION}/kotlin-compiler-${VERSION}.zip`;
 const KOTLIN_PATH_NAME = `kotlin-js`;
@@ -30,6 +29,15 @@ const promisify = (fun, ...args) => new Promise((resolve, reject) => {
 
 // If the process exits without going through exit(), then we did not complete.
 let validExit = false;
+
+const originalPath = process.env.PATH;
+const exit = (code = 0) => {
+  validExit = true;
+  process.env.PATH = originalPath;
+  // eslint-disable-next-line no-process-exit
+  process.exit(code);
+};
+
 process.on(`exit`, () => {
   if (!validExit) {
     console.log(`Install exited unexpectedly`);
@@ -47,6 +55,29 @@ const clean = (filepath) => filepath.
     replace(/:+$/, ``);
 
 process.env.PATH = clean(originalPath);
+
+/**
+ * @return {string} Get the download URL for kotlinjs.
+ */
+const getDownloadUrl = () => DEFAULT_CDN;
+
+/**
+ * TODO: Verify downloaded file checksum
+ * Check to make sure that the file matches the checksum.
+ * @param {string} fileName
+ * @return {Promise.<boolean>}
+ */
+const verifyChecksum = (fileName) => Promise.resolve(true);
+
+/**
+ * @return {string}
+ */
+const getTargetPlatform = () => process.platform;
+
+/**
+ * @return {string}
+ */
+const getTargetArch = () => process.arch;
 
 const libPath = path.join(__dirname, LIB_FOLDER_NAME);
 const pkgPath = path.join(libPath, KOTLIN_PATH_NAME);
@@ -135,14 +166,6 @@ function writeLocationFile(location) {
 
   fs.writeFileSync(locationJsPath, contents);
 }
-
-function exit(code) {
-  validExit = true;
-  process.env.PATH = originalPath;
-  // eslint-disable-next-line no-process-exit
-  process.exit(code || 0);
-}
-
 
 function findSuitableTempDirectory() {
   const now = Date.now();
@@ -348,14 +371,6 @@ function copyIntoPlace(extractedPath, targetPath) {
   });
 }
 
-
-/**
- * @return {string} Get the download URL for kotlinjs.
- */
-function getDownloadUrl() {
-  return DEFAULT_CDN;
-}
-
 /**
  * Download kotlinjs, reusing the existing copy on disk if available.
  * Exits immediately if there is no binary to download.
@@ -385,26 +400,3 @@ function downloadKotlinJs() {
   });
 }
 
-/**
- * TODO: Verify downloaded file checksum
- * Check to make sure that the file matches the checksum.
- * @param {string} fileName
- * @return {Promise.<boolean>}
- */
-function verifyChecksum(fileName) {
-  return Promise.resolve(true);
-}
-
-/**
- * @return {string}
- */
-function getTargetPlatform() {
-  return process.platform;
-}
-
-/**
- * @return {string}
- */
-function getTargetArch() {
-  return process.arch;
-}
