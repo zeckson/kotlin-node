@@ -115,41 +115,7 @@ const tryKotlinJsInLib = () => {
   }
 };
 
-// Try to figure out installed kotlin-js
-Promise.resolve().
-    then(tryKotlinJsInLib).
-    then(downloadKotlinJs).
-    then(extractDownload).
-    then((extractedPath) => copyIntoPlace(extractedPath, pkgPath)).
-    then(() => {
-      const location = getTargetPlatform() === `win32` ?
-          path.join(pkgPath, `bin`, `${EXEC_NAME}.exe`) :
-          path.join(pkgPath, `bin`, EXEC_NAME);
-
-      try {
-        // Ensure executable is executable by all users
-        fs.chmodSync(location, `755`);
-      } catch (err) {
-        if (err.code === `ENOENT`) {
-          console.error(`chmod failed: kotlinjs was not successfully copied to`, location);
-          exit(1);
-        }
-        throw err;
-      }
-
-      const relativeLocation = path.relative(libPath, location);
-      writeLocationFile(relativeLocation);
-
-      console.log(`Done. ${MODULE_NAME} binary available at ${location}`);
-      exit(0);
-    }).
-    catch((err) => {
-      console.error(`${MODULE_NAME} installation failed`, err, err.stack);
-      exit(1);
-    });
-
-
-function writeLocationFile(location) {
+const writeLocationFile = (location) => {
   console.log(`Writing location.js file`);
   if (getTargetPlatform() === `win32`) {
     location = location.replace(/\\/g, `\\\\`);
@@ -165,9 +131,9 @@ function writeLocationFile(location) {
   }
 
   fs.writeFileSync(locationJsPath, contents);
-}
+};
 
-function findSuitableTempDirectory() {
+const findSuitableTempDirectory = () => {
   const now = Date.now();
   const candidateTmpDirs = [
     process.env.TMPDIR || process.env.TEMP || process.env.npm_config_tmp,
@@ -197,10 +163,10 @@ function findSuitableTempDirectory() {
       `information as possible.`);
   exit(1);
   return void 0;
-}
+};
 
 
-function getRequestOptions() {
+const getRequestOptions = () => {
   const strictSSL = !!process.env.npm_config_strict_ssl;
 
   const options = {
@@ -259,9 +225,9 @@ function getRequestOptions() {
   }
 
   return options;
-}
+};
 
-function handleRequestError(error) {
+const handleRequestError = (error) => {
   if (error && error.stack && error.stack.indexOf(`SELF_SIGNED_CERT_IN_CHAIN`) > -1) {
     console.error(`Error making request, SELF_SIGNED_CERT_IN_CHAIN. ` +
         `Looks like someone intercepted your traffic`);
@@ -273,9 +239,9 @@ function handleRequestError(error) {
         `log at https://github.com/zeckson/kotlin-node/issues`);
   }
   exit(1);
-}
+};
 
-function requestBinary(requestOptions, filePath) {
+const requestBinary = (requestOptions, filePath) => {
   const writePath = `${filePath}-download-${Date.now()}`;
 
   console.log(`Receiving...`);
@@ -313,10 +279,9 @@ function requestBinary(requestOptions, filePath) {
       }
     }).on(`error`, handleRequestError);
   });
-}
+};
 
-
-function extractDownload(filePath) {
+const extractDownload = (filePath) => {
   // extract to a unique directory in case multiple processes are
   // installing and extracting at once
   const extractedPath = `${filePath}-extract-${Date.now()}`;
@@ -351,9 +316,9 @@ function extractDownload(filePath) {
       });
     }
   });
-}
+};
 
-function copyIntoPlace(extractedPath, targetPath) {
+const copyIntoPlace = (extractedPath, targetPath) => {
   console.log(`Removing`, targetPath);
   return promisify(fs.remove, targetPath).then(function () {
     // Look for the extracted directory, so we can rename it.
@@ -369,14 +334,14 @@ function copyIntoPlace(extractedPath, targetPath) {
     console.log(`Could not find extracted file`, files);
     throw new Error(`Could not find extracted file`);
   });
-}
+};
 
 /**
  * Download kotlinjs, reusing the existing copy on disk if available.
  * Exits immediately if there is no binary to download.
  * @return {Promise.<string>} The path to the downloaded file.
  */
-function downloadKotlinJs() {
+const downloadKotlinJs = () => {
   const downloadUrl = getDownloadUrl();
   const tmpPath = findSuitableTempDirectory();
   const fileName = downloadUrl.split(`/`).pop();
@@ -398,5 +363,37 @@ function downloadKotlinJs() {
     console.log(`Saving to`, downloadedFile);
     return requestBinary(getRequestOptions(), downloadedFile);
   });
-}
+};
 
+// Check for installed kotlin-js and then download
+Promise.resolve().
+    // then(tryKotlinJsInLib).
+    then(downloadKotlinJs).
+    then(extractDownload).
+    then((extractedPath) => copyIntoPlace(extractedPath, pkgPath)).
+    then(() => {
+      const location = getTargetPlatform() === `win32` ?
+          path.join(pkgPath, `bin`, `${EXEC_NAME}.exe`) :
+          path.join(pkgPath, `bin`, EXEC_NAME);
+
+      try {
+        // Ensure executable is executable by all users
+        fs.chmodSync(location, `755`);
+      } catch (err) {
+        if (err.code === `ENOENT`) {
+          console.error(`chmod failed: kotlinjs was not successfully copied to`, location);
+          exit(1);
+        }
+        throw err;
+      }
+
+      const relativeLocation = path.relative(libPath, location);
+      writeLocationFile(relativeLocation);
+
+      console.log(`Done. ${MODULE_NAME} binary available at ${location}`);
+      exit(0);
+    }).
+    catch((err) => {
+      console.error(`${MODULE_NAME} installation failed`, err, err.stack);
+      exit(1);
+    });
