@@ -21,7 +21,6 @@
   "dependencies": {
     "extract-zip": "1.6.5",
     "fs-extra": "2.1.2",
-    "kew": "0.7.0",
     "progress": "2.0.0",
     "request": "2.81.0",
     "request-progress": "3.0.0"
