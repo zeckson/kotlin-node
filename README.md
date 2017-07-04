@@ -19,6 +19,15 @@ npm i kotlin -SE
 ```
 
 ### Usage:
+
+##### CLI usage example:
+```sh 
+kotlinc-js  -module-kind commonjs -output out/server.js -meta-info src/**/*.kt src/*.kt
+
+```
+##### JavaScript module usages:
+
+As parameters array:
 ```js
 const kotlinc = require(`kotlin-node`);
 
@@ -28,6 +37,18 @@ kotlinc([
   `-meta-info src/**/*.kt src/*.kt`
 ]).catch(console.error);
 ```
+
+As parameters JSON:
+```js
+const kotlinc = require(`kotlin-node`);
+
+kotlinc({
+  'module-kind': `commonjs`,
+  'output': `out/server.js`,
+  'meta-info': [`src/**/*.kt`, `src/*.kt`]
+}).catch(console.error);
+```
+
 Some of available CLI keys are available in [documentation](https://kotlinlang.org/docs/tutorials/javascript/getting-started-command-line/command-line-library-js.html).
 Kotlin Compiler Usage Help:
 ```sh
