@@ -1,7 +1,7 @@
 'use strict';
 
 const requestProgress = require(`request-progress`);
-const progress = require(`progress`);
+const Progress = require(`progress`);
 const extractZip = require(`extract-zip`);
 const cp = require(`child_process`);
 const fs = require(`fs-extra`);
@@ -30,15 +30,15 @@ process.on(`exit`, () => {
 // NPM adds bin directories to the path, which will cause `which` to find the
 // bin for this package not the actual kotlinjs bin.  Also help out people who
 // put ./bin on their path
-const cleanPath = function (path) {
-  return path.
+const clean = function (filepath) {
+  return filepath.
       replace(/:[^:]*node_modules[^:]*/g, ``).
       replace(/(^|:)\.\/bin(\:|$)/g, `:`).
       replace(/^:+/, ``).
       replace(/:+$/, ``);
 };
 
-process.env.PATH = cleanPath(originalPath);
+process.env.PATH = clean(originalPath);
 
 const libPath = path.join(__dirname, `lib`);
 const pkgPath = path.join(libPath, KOTLIN_PATH_NAME);
@@ -98,6 +98,7 @@ function writeLocationFile(location) {
 function exit(code) {
   validExit = true;
   process.env.PATH = originalPath;
+  // eslint-disable-next-line no-process-exit
   process.exit(code || 0);
 }
 
@@ -131,6 +132,7 @@ function findSuitableTempDirectory() {
       `on https://github.com/zeckson/kotlin-node/issues with as much ` +
       `information as possible.`);
   exit(1);
+  return void 0;
 }
 
 
@@ -238,12 +240,12 @@ function requestBinary(requestOptions, filePath) {
     })).on(`progress`, function (state) {
       try {
         if (!bar) {
-          bar = new progress(`  [:bar] :percent`, {total: state.size.total, width: 40});
+          bar = new Progress(`  [:bar] :percent`, {total: state.size.total, width: 40});
         }
         bar.curr = state.size.transferred;
         bar.tick();
       } catch (e) {
-        // It doesn't really matter if the progress bar doesn't update.
+        // It doesn't really matter if the Progress bar doesn't update.
       }
     }).on(`error`, handleRequestError);
   });
