@@ -52,7 +52,7 @@ const libPath = path.join(__dirname, LIB_FOLDER_NAME);
 const pkgPath = path.join(libPath, KOTLIN_PATH_NAME);
 const locationJsPath = path.join(libPath, LOCATION_JS_MODULE_NAME);
 
-function resolveLocationJs() {
+const resolveLocationJs = () => {
   const locationModulePath = `./${LIB_FOLDER_NAME}/${LOCATION_JS_MODULE_NAME}`;
   console.log(`Resolving existing file in: ${locationModulePath}`);
   try {
@@ -71,18 +71,18 @@ function resolveLocationJs() {
     // fall through
   }
   return false;
-}
+};
 
 /*
  * Check to see if the binary in lib is OK to use. If successful, exit the process.
  */
-function tryKotlinJsInLib() {
+const tryKotlinJsInLib = () => {
   const location = resolveLocationJs();
   if (location) {
     console.log(`KotlinJS is previously installed at`, location);
     exit(0);
   }
-}
+};
 
 // Try to figure out installed kotlin-js
 Promise.resolve().
@@ -353,19 +353,7 @@ function copyIntoPlace(extractedPath, targetPath) {
  * @return {string} Get the download URL for kotlinjs.
  */
 function getDownloadUrl() {
-  const spec = getDownloadSpec();
-  return spec && spec.url;
-}
-
-/**
- * @return {{url: string, checksum: string}} Get the download URL and expected
- */
-function getDownloadSpec() {
-  const cdnUrl = DEFAULT_CDN;
-
-  // TODO: Add checksum validation
-
-  return {url: cdnUrl, checksum: ``};
+  return DEFAULT_CDN;
 }
 
 /**
@@ -374,16 +362,7 @@ function getDownloadSpec() {
  * @return {Promise.<string>} The path to the downloaded file.
  */
 function downloadKotlinJs() {
-  const downloadSpec = getDownloadSpec();
-  if (!downloadSpec) {
-    console.error(
-        `Unexpected platform or architecture: ` + getTargetPlatform() + `/` + getTargetArch() + `\n` +
-        `It seems there is no binary available for your platform/architecture\n` +
-        `Try to install KotlinJS manually`);
-    exit(1);
-  }
-
-  const downloadUrl = downloadSpec.url;
+  const downloadUrl = getDownloadUrl();
   const tmpPath = findSuitableTempDirectory();
   const fileName = downloadUrl.split(`/`).pop();
   const downloadedFile = path.join(tmpPath, fileName);
@@ -391,7 +370,7 @@ function downloadKotlinJs() {
   return new Promise((resolve) => {
     if (fs.existsSync(downloadedFile)) {
       console.log(`Download already available at`, downloadedFile);
-      resolve(verifyChecksum(downloadedFile, downloadSpec.checksum));
+      resolve(verifyChecksum(downloadedFile));
     }
     resolve(false);
   }).then((verified) => {
@@ -410,10 +389,9 @@ function downloadKotlinJs() {
  * TODO: Verify downloaded file checksum
  * Check to make sure that the file matches the checksum.
  * @param {string} fileName
- * @param {string} checksum
  * @return {Promise.<boolean>}
  */
-function verifyChecksum(fileName, checksum) {
+function verifyChecksum(fileName) {
   return Promise.resolve(true);
 }
 
