@@ -1,4 +1,6 @@
 # kotlin-node
+[![Build Status](https://travis-ci.org/zeckson/kotlin-node.svg?branch=master)](https://travis-ci.org/zeckson/kotlin-node)
+
 Kotlin Node.JS compiler installer and wrapper
 
 It downloads and installs kotlinc-js compiler for [Кotlin](http://kotlinlang.org/) language
