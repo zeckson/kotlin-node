@@ -15,18 +15,17 @@ const DEFAULT_CDN = `https://github.com/JetBrains/kotlin/releases/download/v${VE
 const KOTLIN_PATH_NAME = `kotlin-js`;
 const EXEC_NAME = `kotlinc-js`;
 const MODULE_NAME = `KotlinJS`;
+const LIB_FOLDER_NAME = `lib`;
+const LOCATION_JS_MODULE_NAME = `location.js`;
 
 const promisify = (fun, ...args) => new Promise((resolve, reject) => {
-  const value = fun(...args, (err, result) => {
+  fun(...args, (err, result) => {
     if (err) {
       reject(err);
     } else {
       resolve(result);
     }
   });
-  if (value) {
-    resolve(value);
-  }
 });
 
 // If the process exits without going through exit(), then we did not complete.
@@ -49,10 +48,6 @@ const clean = (filepath) => filepath.
 
 process.env.PATH = clean(originalPath);
 
-
-const LIB_FOLDER_NAME = `lib`;
-const LOCATION_JS_MODULE_NAME = `location.js`;
-
 const libPath = path.join(__dirname, LIB_FOLDER_NAME);
 const pkgPath = path.join(libPath, KOTLIN_PATH_NAME);
 const locationJsPath = path.join(libPath, LOCATION_JS_MODULE_NAME);
@@ -60,20 +55,20 @@ const locationJsPath = path.join(libPath, LOCATION_JS_MODULE_NAME);
 function resolveLocationJs() {
   const locationModulePath = `./${LIB_FOLDER_NAME}/${LOCATION_JS_MODULE_NAME}`;
   console.log(`Resolving existing file in: ${locationModulePath}`);
-  const libModule = require(locationModulePath);
+  try {
+    const libModule = require(locationModulePath);
 
-  if (libModule.location &&
-      getTargetPlatform() === libModule.platform &&
-      getTargetArch() === libModule.arch) {
-    try {
+    if (libModule.location &&
+        getTargetPlatform() === libModule.platform &&
+        getTargetArch() === libModule.arch) {
       const resolvedLocation = path.resolve(libPath, libModule.location);
       console.log(`Found location: ${resolvedLocation}`);
       if (fs.statSync(resolvedLocation)) {
         return resolvedLocation;
       }
-    } catch (e) {
-      // fall through
     }
+  } catch (e) {
+    // fall through
   }
   return false;
 }
