@@ -25,12 +25,14 @@
   "dependencies": {
     "extract-zip": "1.6.5",
     "fs-extra": "2.1.2",
+    "klaw-sync": "3.0.0",
     "progress": "2.0.0",
     "request": "2.81.0",
     "request-progress": "3.0.0"
   },
   "devDependencies": {
     "eslint": "3.19.0",
-    "eslint-config-htmlacademy": "0.2.3"
+    "eslint-config-htmlacademy": "0.2.3",
+    "mocha": "3.5.0"
   }
 }

@@ -4,6 +4,7 @@ module.exports = {
     es6: true,
     node: true,
     commonjs: true,
+    mocha: true
   },
   extends: 'htmlacademy/es6',
   rules: {
