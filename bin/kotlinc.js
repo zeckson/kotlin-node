@@ -10,5 +10,8 @@ const proxyArgs = process.argv.slice(2);
 if (proxyArgs.length === 0) {
   showHelp();
 } else {
-  cli(proxyArgs).then(console.log).catch(console.error);
+  cli(proxyArgs).then(console.log).catch((e) => {
+    console.error(e);
+    throw new Error(`Compilation failed.`);
+  });
 }
