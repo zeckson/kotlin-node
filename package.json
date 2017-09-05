@@ -8,7 +8,7 @@
   "main": "lib/cli.js",
   "scripts": {
     "install": "node install.js",
-    "test": "eslint ./",
+    "test": "eslint ./ && mocha test/",
     "deploy": "npm run test && git push && npm publish"
   },
   "repository": {
