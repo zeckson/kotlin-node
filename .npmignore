@@ -1,0 +1,11 @@
+.idea
+lib/kotlin-js
+lib/location.js
+
+node_modules
+
+test
+
+.eslintrc.js
+.travis.yml
+usage.js
