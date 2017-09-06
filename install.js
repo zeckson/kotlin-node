@@ -9,7 +9,7 @@ const path = require(`path`);
 const request = require(`request`);
 const url = require(`url`);
 
-const VERSION = `1.1.3`;
+const VERSION = `1.1.4`;
 const DEFAULT_CDN = `https://github.com/JetBrains/kotlin/releases/download/v${VERSION}/kotlin-compiler-${VERSION}.zip`;
 const KOTLIN_PATH_NAME = `kotlin-js`;
 const EXEC_NAME = `kotlinc-js`;
@@ -94,8 +94,12 @@ const resolveLocationJs = () => {
         getTargetArch() === libModule.arch) {
       const resolvedLocation = path.resolve(libPath, libModule.location);
       console.log(`Found location: ${resolvedLocation}`);
-      if (fs.statSync(resolvedLocation)) {
-        return resolvedLocation;
+      if (libModule.version === VERSION) {
+        if (fs.statSync(resolvedLocation)) {
+          return resolvedLocation;
+        }
+      } else {
+        console.log(`Versions doesn't match. Found: ${libModule.version}. Required: ${VERSION}`);
       }
     }
   } catch (e) {
@@ -126,6 +130,7 @@ const writeLocationFile = (location) => {
 
   let contents = `'use strict';\n`;
   contents += `module.exports.location = \`${location}\`;\n`;
+  contents += `module.exports.version = \`${VERSION}\`;\n`;
 
   if (/^[a-zA-Z0-9]*$/.test(platform) && /^[a-zA-Z0-9]*$/.test(arch)) {
     contents += `module.exports.platform = \`${platform}\`;\nmodule.exports.arch = \`${arch}\`;\n`;
