@@ -9,7 +9,7 @@ const path = require(`path`);
 const request = require(`request`);
 const url = require(`url`);
 
-const VERSION = `1.1.3`;
+const VERSION = require(`./package.json`).version || `1.1.3`;
 const DEFAULT_CDN = `https://github.com/JetBrains/kotlin/releases/download/v${VERSION}/kotlin-compiler-${VERSION}.zip`;
 const KOTLIN_PATH_NAME = `kotlin-js`;
 const EXEC_NAME = `kotlinc-js`;
