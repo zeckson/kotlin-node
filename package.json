@@ -1,6 +1,7 @@
 {
   "name": "kotlin-node",
   "version": "1.6.20",
+  "kotlin_version": "1.6.20",
   "description": "Kotlin Node.JS compiler installer and wrapper",
   "bin": {
     "kotlinc-js": "./bin/kotlinc.js"

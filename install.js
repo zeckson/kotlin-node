@@ -9,7 +9,14 @@ const path = require(`path`);
 const request = require(`request`);
 const url = require(`url`);
 
-const VERSION = require(`./package.json`).version || `1.1.3`;
+const packageJson = require(`./package.json`);
+const VERSION = packageJson.kotlin_version || packageJson.version;
+
+const semver = VERSION.split(`.`);
+if (semver.length !== 3) {
+  throw new Error(`Invalid semver version: ${VERSION}`)
+}
+
 const DEFAULT_CDN = `https://github.com/JetBrains/kotlin/releases/download/v${VERSION}/kotlin-compiler-${VERSION}.zip`;
 const KOTLIN_PATH_NAME = `kotlin-js`;
 const EXEC_NAME = `kotlinc-js`;
