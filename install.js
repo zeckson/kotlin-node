@@ -14,7 +14,7 @@ const VERSION = packageJson.kotlin_version || packageJson.version;
 
 const semver = VERSION.split(`.`);
 if (semver.length !== 3) {
-  throw new Error(`Invalid semver version: ${VERSION}`)
+  throw new Error(`Invalid semver version: ${VERSION}`);
 }
 
 const DEFAULT_CDN = `https://github.com/JetBrains/kotlin/releases/download/v${VERSION}/kotlin-compiler-${VERSION}.zip`;
